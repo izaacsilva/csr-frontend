@@ -4,18 +4,23 @@
       <img class="img_logo" src="../assets/Logo.svg" />
       <P class="name_logo">Controle de Salas de Reunião</P>
     </div>
+    <ul>
+      <li v-for="room in rooms" v-bind:key="room.id">{{room.name}}</li>
+    </ul>
     <input v-model="corporate_id" class="input_textbox_login" />
     <button class="btn btn-primary" type="submit">Login</button>
   </div>
 </template>
 
 <script>
+import axios from "axios";
 export default {
   data() {
     return {
       corporate_id: "17113707",
       password: "123456",
-      show: true
+      show: true,
+      rooms: []
     };
   },
   methods: {
@@ -23,6 +28,14 @@ export default {
       evt.preventDefault();
       alert(JSON.stringify(this.form));
     }
+  },
+  mounted() {
+    axios
+      .get("http://localhost:8080/room/all")
+      .then(response => (this.rooms = response.data))
+      .catch(error => {
+        console.log(error);
+      });
   }
 };
 </script>
