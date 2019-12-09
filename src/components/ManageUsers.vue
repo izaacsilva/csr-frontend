@@ -3,58 +3,46 @@
         <p class="Welcome">Seja bem vindo {{session['FirstName']}}</p>
         <p class="CorporateID">Matrícula: {{session['CorporateID']}}</p>
         <button class="OptionBtn Exit"></button>
-        <button class="OptionBtn Back"></button>
-        <button class="OptionBtn Foward"></button>
-        <button class="OptionBtn Delete"></button>
+        <button class="OptionBtn New" v-on:click="novo" v-show="!this.show">Novo</button>
+        <button class="OptionBtn New" v-on:click="cancelar" v-show="this.show">Cancelar</button>
+        <button class="OptionBtn Delete" v-show="this.show && this.form.id"></button>
 
         <b-form @submit="onSubmit" v-if="show">
             
-            <p class="FormLabel ID">ID:</p>
-
-                <b-form-input 
-                class="IDTexbox"
-                id="IDTexbox"
-                v-model="form.ID"
-                required
-                placeholder="ID"
-                ></b-form-input>
                 
-            <b-button class="OptionBtn Save" type="submit" variant="primary"></b-button>
+            
 
             <p class="FormLabel Name">Nome:</p>
 
                 <b-form-input 
                 class="NameTexbox"
                 id="NameTexbox"
-                v-model="form.Name"
+                v-model="form.name"
                 required
                 placeholder="Nome"
                 ></b-form-input>
                 
-            <b-button class="OptionBtn Save" type="submit" variant="primary"></b-button>
-
+            
             <p class="FormLabel Passwd">Senha:</p>
 
                 <b-form-input 
                 class="PasswdTexbox"
                 id="PasswdTexbox"
-                v-model="form.Passwd"
+                v-model="form.password"
                 required
                 placeholder="Senha"
                 ></b-form-input>
                 
-            <b-button class="OptionBtn Save" type="submit" variant="primary"></b-button>
             <p class="FormLabel Gender">Gênero:</p>
 
                 <b-form-input 
                 class="GenderTexbox"
                 id="GenderTexbox"
-                v-model="form.Gender"
+                v-model="form.gender"
                 required
                 placeholder="Gênero"
                 ></b-form-input>
                 
-            <b-button class="OptionBtn Save" type="submit" variant="primary"></b-button>
             </b-form>
     
         <div class="BookingTable">
@@ -64,13 +52,15 @@
                     <th class="HeaderLabel" v-for="item in header" :key="item">
                         {{ item }}
                     </th>
+                    
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="line in data.length" :key="line">
+                <tr v-for="item in data" :key="item.id" v-on:click="edit(item)">
                     <td v-for="col in Object.keys(header)" :key="col">
-                        {{ data[line-1][col]  }}
+                        {{ item[col]  }}
                     </td>
+                    
                 </tr>
             </tbody>
     </table>
@@ -137,10 +127,12 @@ body{
     top: 724px;
     background-image: url("../assets/ExitBtn.png");
 }
-.OptionBtn.Back{
+.OptionBtn.New{
     left: 636px;
     top: 484px;
-    background-image: url("../assets/BackBtn.png");
+    background-color: #F8DD15;
+    border-block-color: #033AA6;
+    border-block: initial;
 }
 .OptionBtn.Foward{
     left: 817px;
@@ -302,12 +294,13 @@ body{
 </style>
 
 <script>
+import axios from 'axios'
 export default {
     data() {
         return {
-            header: {'ID': 'ID', 'Name':'Nome', 'Passwd':'Senha', 'Gender':'Gênero' },
-            data:[  {'ID': '01', 'Name':'Dilma Roussef', 'Passwd':'1234', 'Gender':'Feminino' },
-                    {'ID': '02', 'Name':'Sandra Tanaka', 'Passwd':'123456', 'Gender':'Feminino' }
+            header: {'id': 'ID', 'name':'Nome', 'password':'Senha', 'gender':'Gênero' },
+            data:[  {'id': '01', 'name':'Dilma Roussef', 'password':'1234', 'gender':'Feminino' },
+                    {'id': '02', 'name':'Sandra Tanaka', 'password':'123456', 'gender':'Feminino' }
                     ],
             form: {
                 ID: ''
@@ -316,6 +309,32 @@ export default {
             show: true,
             session:{'FirstName':'Erick','CorporateID':"17113707"}
         }
+    },
+  mounted() {
+    axios
+      .get("http://localhost:8080/user/all")
+      .then(response => (this.data = response.data))
+      .catch(error => {
+        console.log(error);
+      });
+    this.show = false;
+  },
+  methods: {
+    onSubmit(evt) {
+      evt.preventDefault();
+      alert(JSON.stringify(this.form));
+    },
+    edit(selected) {
+        this.form = selected;
+        this.show = true;
+    },
+    novo() {
+        this.form = {id: null, name: '', password: '', gender: ''};
+        this.show = true;
+    },
+    cancelar() {
+        this.show = false;
     }
+  }
 }
 </script>
