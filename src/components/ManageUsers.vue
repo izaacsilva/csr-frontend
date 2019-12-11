@@ -5,7 +5,8 @@
         <button class="OptionBtn Exit"></button>
         <button class="OptionBtn New" v-on:click="novo" v-show="!this.show">Novo</button>
         <button class="OptionBtn New" v-on:click="cancelar" v-show="this.show">Cancelar</button>
-        <button class="OptionBtn Delete" v-show="this.show && this.form.id"></button>
+        <button class="OptionBtn Delete" v-on:click="excluir" v-show="this.show && this.form.id">Excluir</button>
+        <button class="OptionBtn Delete" v-on:click="salvar" v-show="this.show">Salvar</button>
 
         <b-form @submit="onSubmit" v-if="show">
             
@@ -143,7 +144,6 @@ body{
 .OptionBtn.Delete{
     left: 1035px;
     top: 484px;
-    background-image: url("../assets/DeleteBtn.png");
 }
 
 .OptionBtn.Save{
@@ -295,6 +295,7 @@ body{
 
 <script>
 import axios from 'axios'
+import { response } from 'express';
 export default {
     data() {
         return {
@@ -311,15 +312,18 @@ export default {
         }
     },
   mounted() {
-    axios
+    carregarLista();
+    this.show = false;
+  },
+  methods: {
+    carregarLista() {
+      axios
       .get("http://localhost:8080/user/all")
       .then(response => (this.data = response.data))
       .catch(error => {
         console.log(error);
       });
-    this.show = false;
-  },
-  methods: {
+    },
     onSubmit(evt) {
       evt.preventDefault();
       alert(JSON.stringify(this.form));
@@ -334,6 +338,14 @@ export default {
     },
     cancelar() {
         this.show = false;
+    },
+    salvar() {
+        axios
+        .post("http://localhos:8080/user/save", this.form)
+        .then(response => response.status)
+        .catch(error => {console.log(error)});
+        carregarLista();
+        this.show=false;
     }
   }
 }
