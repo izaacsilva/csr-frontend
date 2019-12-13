@@ -3,9 +3,10 @@
     <p class="Welcome">Seja bem vindo {{session['FirstName']}}</p>
     <p class="CorporateID">Matrícula: {{session['CorporateID']}}</p>
     <button class="OptionBtn Exit"></button>
-    <button class="OptionBtn Back"></button>
-    <button class="OptionBtn Foward"></button>
-    <button class="OptionBtn Delete"></button>
+    <button class="OptionBtn New" v-on:click="novo" v-show="!this.show">Novo</button>
+    <button class="OptionBtn New" v-on:click="cancelar" v-show="this.show">Cancelar</button>
+    <button class="OptionBtn Foward" v-on:click="excluir" v-show="this.show && this.form.id">Excluir</button>
+    <button class="OptionBtn Delete" v-on:click="salvar" v-show="this.show">Salvar</button>
 
     <b-form @submit="onSubmit" v-if="show">
       <p class="FormLabel Room">Sala:</p>
@@ -13,9 +14,19 @@
       <b-form-input
         class="RoomTexbox"
         id="RoomTexbox"
-        v-model="form.Room"
+        v-model="form.name"
         required
         placeholder="Sala"
+      ></b-form-input>
+
+      <p class="FormLabel Type">Tipo:</p>
+
+      <b-form-input
+        class="TypeTexbox"
+        id="TypeTexbox"
+        v-model="form.type"
+        required
+        placeholder="Tipo"
       ></b-form-input>
 
       <b-button class="OptionBtn Save" type="submit" variant="primary"></b-button>
@@ -29,8 +40,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="line in data.length" :key="line">
-            <td v-for="col in Object.keys(header)" :key="col">{{ data[line-1][col] }}</td>
+          <tr v-for="item in data" :key="item.id" v-on:click="edit(item)">
+            <td v-for="col in Object.keys(header)" :key="col">{{ item[col] }}</td>
           </tr>
         </tbody>
       </table>
@@ -94,28 +105,30 @@ body {
   top: 724px;
   background-image: url("../assets/ExitBtn.png");
 }
-.OptionBtn.Back {
-  left: 383px;
-  top: 377px;
-  background-image: url("../assets/BackBtn.png");
+.OptionBtn.New {
+  left: 636px;
+  top: 484px;
+  background-color: #f8dd15;
+  border-block-color: #033aa6;
+  border-block: initial;
 }
 .OptionBtn.Foward {
-  left: 548px;
-  top: 377px;
-  background-image: url("../assets/FowardBtn.png");
+  left: 817px;
+  top: 484px;
+  
 }
 
 .OptionBtn.Delete {
-  left: 828px;
-  top: 379px;
-  background-image: url("../assets/DeleteBtn.png");
+  left: 1035px;
+  top: 484px;
 }
 
 .OptionBtn.Save {
-  left: 828px;
-  top: 379px;
+  left: 751px;
+  top: 724px;
   background-image: url("../assets/SaveBtn.png");
 }
+
 
 .BookingTable {
   position: absolute;
@@ -183,12 +196,31 @@ body {
   top: 318px;
 }
 
+.FormLabel.Type {
+  width: 111.61px;
+  height: 23px;
+  left: 390px;
+  top: 348px;
+}
+
 .RoomTexbox {
   position: absolute;
   width: 119px;
   height: 23px;
   left: 478px;
   top: 318px;
+
+  background: #f1f1f1;
+  border: 1px solid #939191;
+  box-sizing: border-box;
+}
+
+.TypeTexbox {
+  position: absolute;
+  width: 119px;
+  height: 23px;
+  left: 478px;
+  top: 348px;
 
   background: #f1f1f1;
   border: 1px solid #939191;
@@ -201,16 +233,17 @@ import axios from 'axios'
 export default {
   data() {
     return {
-      header: { id: "Nº", name: "Sala" },
+      header: { id: "Nº", name: "Sala", type: "Tipo" },
       data: [
         {
-          ID: "01",
-          Room: "05210"
+          id: "01",
+          name: "05210",
+          type: "conferência"
         },
-        { ID: "02", Room: "05211" }
+        { ID: "02", name: "05211", type: "datashow" }
       ],
       form: {
-        Room: ""
+        name: "", type: ""
       },
 
       show: true,
@@ -229,6 +262,39 @@ export default {
     onSubmit(evt) {
       evt.preventDefault();
       alert(JSON.stringify(this.form));
+    },
+    edit(selected) {
+      this.form = selected;
+      this.show = true;
+    },
+    novo() {
+      this.form = { id: null, name: "", type: "" };
+      this.show = true;
+    },
+    cancelar() {
+      this.show = false;
+
+    },
+    salvar() {
+      axios
+        .post(`http://localhost:8080/room/save?${this.form.id ? `id=${this.form.id}&` : ''}name=${this.form.name}&type=${this.form.type}`)
+        .then(response => {
+          if (this.form.id) this.form = response.data
+          else this.data.push(response.data);
+        })
+        .catch(error => {
+          console.log(error);
+        });
+      this.show = false;
+    },
+    excluir() {
+      axios
+        .post("http://localhost:8080/room/delete?id=" + this.form.id)
+        .then(response => this.data.splice(this.data.indexOf(this.form), 1))
+        .catch(error => {
+          console.log(error);
+        });
+      this.show = false;
     }
   }
 };  

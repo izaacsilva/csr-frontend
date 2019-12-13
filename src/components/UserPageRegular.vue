@@ -14,7 +14,6 @@
     <router-link to="/" tag="button">
       <button class="MenuBtn BottomRight"></button>
     </router-link>
-    <button @click="persist">Persistir</button>
   </div>
 </template>
 
@@ -105,11 +104,6 @@ export default {
         CorporateID: "17113707"
       }
     };
-  },
-  methods: {
-      persist () {
-        localStorage.setItem('session', JSON.stringify(this.session));
-      }
   },
   mounted() {
     console.log(localStorage.session);
