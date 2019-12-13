@@ -33,12 +33,14 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
   data() {
     return {
       form: {
         corporate_id: "",
-        password: ""
+        password: "",
+        admin: false
       },
       show: false
     };
@@ -55,6 +57,12 @@ export default {
       this.show = !this.show;
       display = this.show ? "block" : "none";
       document.getElementById("darkBox").style.display = display;
+      axios
+        .get("http://localhost:8080/user/login?id=" + this.form.corporate_id)
+        .then(response => this.admin = this.data.admin)
+        .catch(error => {
+          console.log(error);
+        });
     }
   }
 };
