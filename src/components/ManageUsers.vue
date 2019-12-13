@@ -328,8 +328,11 @@ export default {
     },
     salvar() {
       axios
-        .post(`http://localhost:8080/user/save?id=${this.form.id}&name=${this.form.name}&password=${this.form.password}&gender=${this.form.gender}`)
-        .then(response => this.data.push(response.data))
+        .post(`http://localhost:8080/user/save?${this.form.id ? `id=${this.form.id}&` : ''}name=${this.form.name}&password=${this.form.password}&gender=${this.form.gender}`)
+        .then(response => {
+          if (this.form.id) this.form = response.data
+          else this.data.push(response.data);
+        })
         .catch(error => {
           console.log(error);
         });
